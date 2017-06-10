@@ -51,11 +51,21 @@ public class Simulator {
             pal.add(new Person(adv));
         }
         
-        for(Person p : pal){
-            System.out.println(p.toString());
-        }
-
-
+//        for(Person p : pal){
+//            System.out.println(p.toString());
+//        }
+        
+        
+        Branch b = new Branch();
+        b.add(pal);
+        
+//        for(Person p : pal){
+//            System.out.println(p.toString());
+//        }
+        
+        Taxi t = new Taxi();
+        t.add(pal);
+        
         Semaphore semaphore = new Semaphore(M);
 //        catch(IOException ioe){
 //            

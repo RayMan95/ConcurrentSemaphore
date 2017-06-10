@@ -9,12 +9,16 @@ import java.util.ArrayDeque;
 public class Person {
     
     static int persid = -1;
-    private ArrayDeque<Visit> visits;
-    private int pid;
+    private final ArrayDeque<Visit> visits;
+    private final int pid;
     
-    public Person( ArrayDeque<Visit> adv){
+    public Person(ArrayDeque<Visit> adv){
         pid = ++Person.persid;
         visits = adv;
+    }
+    
+    public boolean isDone(){
+        return visits.isEmpty();
     }
     
     @Override

@@ -7,8 +7,8 @@ import java.util.HashSet;
  * @version 2017-06-10
  */
 public class Visit {
-    private int branch;
-    private int duration;
+    private final int branch;
+    private final int duration;
     private boolean completed = false;
     
     public Visit(int N, int time){

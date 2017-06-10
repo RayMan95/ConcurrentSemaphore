@@ -24,4 +24,12 @@ public class Taxi {
     }
     
     public boolean remove(Person p){ return passengers.remove(p);}
+    
+    public boolean headingOut(){
+        return headingOut;
+    }
+    
+    public void changeDirection(){
+        headingOut = !headingOut;
+    }
 }

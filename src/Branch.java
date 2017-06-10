@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Branch {
     ArrayList<Person> workers;
     private static int branchID = -1;
-    private int myid;
+    private final int myid;
     
     public Branch(){
         myid = ++Branch.branchID;
