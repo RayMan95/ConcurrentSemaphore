@@ -48,7 +48,7 @@ public class Simulator {
                 adv.add(new Visit(b,d));
             }
             
-            pal.add(new Person(++Person.persid, adv));
+            pal.add(new Person(adv));
         }
         
         for(Person p : pal){
