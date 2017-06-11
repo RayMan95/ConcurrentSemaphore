@@ -22,7 +22,7 @@ public class Simulator {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        if(args.length < 1) throw new RuntimeException();
+        if(args.length < 1) throw new IllegalArgumentException();
         File file = new File(args[0]);
         
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -32,6 +32,9 @@ public class Simulator {
         final int N = Integer.parseInt(br.readLine());
         
         ArrayList<Person> pal = new ArrayList<>();
+        
+        
+//        Person.receivingSemaphore = SEM;
         
         String line = "";
         for(int i = 0; i < M; ++i){
@@ -47,26 +50,34 @@ public class Simulator {
                 
                 adv.add(new Visit(b,d));
             }
-            
-            pal.add(new Person(adv));
+            Semaphore SEM = new Semaphore(1); // semaphores of bound 1 for blocking
+            pal.add(new Person(adv,SEM));
         }
         
-//        for(Person p : pal){
-//            System.out.println(p.toString());
-//        }
-        
-        
-        Branch b = new Branch();
-        b.add(pal);
+        Branch[] branches = new Branch[N];
+        for(int i = 0; i < N; ++i){
+            branches[i] = new Branch();
+        }
+        branches[0].add(pal); // add all workers intially to HQ
         
 //        for(Person p : pal){
 //            System.out.println(p.toString());
 //        }
         
-        Taxi t = new Taxi();
-        t.add(pal);
         
-        Semaphore semaphore = new Semaphore(M);
+
+        final Taxi t = new Taxi(branches);
+        Person.TAXI = t;
+        t.start();
+//        for(Person p : pal) p.start();
+        pal.get(0).start();
+        
+        
+        
+        
+        
+//        System.out.println(t);
+        
 //        catch(IOException ioe){
 //            
 //        }

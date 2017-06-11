@@ -9,19 +9,18 @@ import java.util.HashSet;
 public class Visit {
     private final int branch;
     private final int duration;
-    private boolean completed = false;
     
     public Visit(int N, int time){
         branch = N;
         duration = time;        
     }
     
-    public void complete(){
-        completed = true;
+    public int getBranchID(){
+        return branch;
     }
     
-    public boolean isComplete(){
-        return completed;
+    public int getDuration(){
+        return duration;
     }
     
     @Override
