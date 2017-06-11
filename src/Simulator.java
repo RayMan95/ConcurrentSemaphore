@@ -66,7 +66,7 @@ public class Simulator {
         
         
 
-        final Taxi t = new Taxi(branches);
+        final Taxi t = new Taxi(branches, pal);
         Person.TAXI = t;
         t.start();
 //        for(Person p : pal) p.start();
@@ -76,7 +76,7 @@ public class Simulator {
         
         
         
-//        System.out.println(t);
+        System.out.println(t);
         
 //        catch(IOException ioe){
 //            

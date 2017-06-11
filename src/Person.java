@@ -23,6 +23,11 @@ public class Person extends Thread{
         pid = ++Person.persid;
         visits = adv;
         SEM = sem;
+        try {
+            SEM.acquire();
+        } catch (InterruptedException iex) {
+            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, iex);
+        }
         currentBranchID = 0;
     }
     
@@ -66,7 +71,7 @@ public class Person extends Thread{
     }
     
     public void block() throws InterruptedException{
-        System.out.println("blocking");
+        System.out.println("pid=" + pid + " blocking");
         SEM.acquire();
     }
     
@@ -74,7 +79,7 @@ public class Person extends Thread{
     public void run(){
         try {
             block();
-            System.out.println("not blocked");
+//            System.out.println("not blocked");
         } 
         catch (InterruptedException ex) {
             Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
