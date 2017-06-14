@@ -38,8 +38,6 @@ public class Person extends Thread{
         return pid;
     }
     
-    
-    
     public boolean stopHere(int bid){
         return visits.peekFirst().getBranchID() == bid;
     }
@@ -58,7 +56,7 @@ public class Person extends Thread{
     }
     
     public void work() throws InterruptedException{
-//        System.out.println("pid="+pid + " working...");
+        System.out.println("pid="+pid + " working...");
         Visit v = visits.pop();
         currentBranchID = v.getBranchID();
         sleep(33*v.getDuration());
@@ -71,14 +69,18 @@ public class Person extends Thread{
     @Override
     public void run(){
         try {
-            
-//            block();
+            synchronized (TAXI){
+                TAXI.hail(currentBranchID, this); // 
+            }
+            block();
             while(!isDone()){
-                synchronized (TAXI){
-                    TAXI.hail(currentBranchID, this); // intial trip; blocks
-                }
+                
                 block();
                 work(); // blocks
+                if(isDone()) break;
+                synchronized (TAXI){
+                    TAXI.hail(currentBranchID, this); // 
+                }
 //                System.out.println("not blocked");
 //                visits.clear();
                 
