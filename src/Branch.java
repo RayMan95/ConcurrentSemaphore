@@ -8,13 +8,12 @@ import java.util.Comparator;
  * @version 2017-06-10
  */
 public class Branch{
-    ArrayList<Person> workers;
+    private ArrayList<Person> workers = new ArrayList<>();
     private static int branchID = -1;
-    private final int myid;
+    private final int bid;
     
     public Branch(){
-        myid = ++Branch.branchID;
-        workers = new ArrayList<>();
+        bid = ++Branch.branchID;
     }
     
     public void add(Person p){
@@ -29,8 +28,12 @@ public class Branch{
         return workers.remove(p);
     }
     
+    public ArrayList<Person> getWorkers(){
+        return workers;
+    }
+    
     public int getBID(){
-        return myid;
+        return bid;
     }
     
     public static Comparator<Branch> inwardComparator(){
@@ -55,7 +58,7 @@ public class Branch{
     
     @Override
     public String toString(){
-        String s = "BID=" + myid;
+        String s = "BID=" + bid;
         if (!workers.isEmpty()){
             s += "\nWorkers:\n";
             for (Person p : workers){

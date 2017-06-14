@@ -15,19 +15,14 @@ public class Person extends Thread{
     static int persid = -1;
     private final ArrayDeque<Visit> visits;
     private final int pid;
-    private final Semaphore SEM;
+    private final Semaphore MYSEM;
     
     private int currentBranchID;
     
     public Person(ArrayDeque<Visit> adv, Semaphore sem){
         pid = ++Person.persid;
         visits = adv;
-        SEM = sem;
-        try {
-            SEM.acquire();
-        } catch (InterruptedException iex) {
-            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, iex);
-        }
+        MYSEM = sem;
         currentBranchID = 0;
     }
     
@@ -36,11 +31,68 @@ public class Person extends Thread{
     }
     
     public Semaphore getSemaphore(){
-        return SEM;
+        return MYSEM;
     }
     
     public int getPID(){
         return pid;
+    }
+    
+    
+    
+    public boolean stopHere(int bid){
+        return visits.peekFirst().getBranchID() == bid;
+    }
+    
+    
+    public void embark() throws InterruptedException{
+//        System.out.println("P: Embaking");
+//        TAXI.embark(this);
+        block(); // blocks until dropped off
+        
+    }
+    
+    public void block() throws InterruptedException{
+        System.out.println("pid=" + pid + " blocking...");
+        MYSEM.acquire();
+    }
+    
+    public void work() throws InterruptedException{
+//        System.out.println("pid="+pid + " working...");
+        Visit v = visits.pop();
+        currentBranchID = v.getBranchID();
+        sleep(33*v.getDuration());
+//        synchronized (TAXI){
+//            TAXI.hail(currentBranchID, pid);
+//        }
+//        block(); // blocks until picked up
+    }
+    
+    @Override
+    public void run(){
+        try {
+            
+//            block();
+            while(!isDone()){
+                synchronized (TAXI){
+                    TAXI.hail(currentBranchID, this); // intial trip; blocks
+                }
+                block();
+                work(); // blocks
+//                System.out.println("not blocked");
+//                visits.clear();
+                
+//                work(visits.peek().getDuration());
+            }
+            System.out.println("pid=" + pid + " done working");
+            synchronized (Person.class){
+                Taxi.stillWorking = --Taxi.stillWorking;
+            }
+        } 
+        catch (InterruptedException iex) {
+            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, iex);
+        }
+        
     }
     
     @Override
@@ -53,37 +105,5 @@ public class Person extends Thread{
         }
         
         return s;
-    }
-    
-    public boolean disembark(int bid){
-        if(visits.peekFirst().getBranchID() == bid){
-            // remove branch from visits and set new currentBranchID
-            currentBranchID = visits.pop().getBranchID();
-            return TAXI.disembark(this);
-        }
-        else return false;
-    }
-    
-    public void embark(){
-//        System.out.println("P: Embaking");
-        TAXI.embark(this);
-        
-    }
-    
-    public void block() throws InterruptedException{
-        System.out.println("pid=" + pid + " blocking");
-        SEM.acquire();
-    }
-    
-    @Override
-    public void run(){
-        try {
-            block();
-//            System.out.println("not blocked");
-        } 
-        catch (InterruptedException ex) {
-            Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
     }
 }

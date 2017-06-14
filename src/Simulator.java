@@ -50,7 +50,7 @@ public class Simulator {
                 
                 adv.add(new Visit(b,d));
             }
-            Semaphore SEM = new Semaphore(1); // semaphores of bound 1 for blocking
+            Semaphore SEM = new Semaphore(0); // semaphores of bound 1 for blocking
             pal.add(new Person(adv,SEM));
         }
         
@@ -59,7 +59,6 @@ public class Simulator {
             branches[i] = new Branch();
         }
         branches[0].add(pal); // add all workers intially to HQ
-        
 //        for(Person p : pal){
 //            System.out.println(p.toString());
 //        }
@@ -68,6 +67,8 @@ public class Simulator {
 
         final Taxi t = new Taxi(branches, pal);
         Person.TAXI = t;
+//        Taxi.stillWorking = pal.size(); // uncomment
+        Taxi.stillWorking = 1;
         t.start();
 //        for(Person p : pal) p.start();
         pal.get(0).start();
@@ -76,7 +77,7 @@ public class Simulator {
         
         
         
-        System.out.println(t);
+//        System.out.println(t);
         
 //        catch(IOException ioe){
 //            
