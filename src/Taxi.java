@@ -22,6 +22,7 @@ public class Taxi extends Thread{
     private final Branch[] branches;
     private int currentBranchID;
     private HashMap<Person, Semaphore> passengerSemaphores;
+    private final Trace TRACE;
     
     public static volatile int stillWorking = 0;
     
@@ -29,7 +30,7 @@ public class Taxi extends Thread{
     private final ArrayList<Person> passengers = new ArrayList<>();
     
     
-    public Taxi(Branch[] b, ArrayList<Person> ppl){
+    public Taxi(Branch[] b, ArrayList<Person> ppl, Trace t){
         inStops = new PriorityQueue<>(Branch.inwardComparator());
         outStops = new PriorityQueue<>(Branch.inwardComparator());
         branches = b;
@@ -39,6 +40,8 @@ public class Taxi extends Thread{
         for (Person p : ppl) passengerSemaphores.put(p, p.getSemaphore());
         
         setupBranchHailees(ppl);
+        
+        TRACE = t;
     }
     
     private void setupBranchHailees(ArrayList<Person> ppl){
@@ -112,6 +115,7 @@ public class Taxi extends Thread{
 //                System.out.println(this);
                 
                 Branch currentBranch = branches[currentBranchID];
+//                TRACE.logTaxi(true, currentBranchID, System.currentTimeMillis());
 //                if(direction > 0){ // heading outward
 //                    if(outStops.contains(currentBranch)) stopping = true;
 //                }
@@ -120,7 +124,7 @@ public class Taxi extends Thread{
 //                }
 //                if(!stopping) continue;
 //                System.out.println("At branch: " + currentBranch);
-                
+                sleep(33);
                 synchronized (this){
                     ArrayList<Person> disembarkList = new ArrayList<>();
                     if(!passengers.isEmpty()){
@@ -177,11 +181,14 @@ public class Taxi extends Thread{
                     sleep(1); // Taxi idle
                 }
                 
+//                TRACE.logTaxi(false, currentBranchID, System.currentTimeMillis());
+                
                 currentBranchID += direction;
                 if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))
                     changeDirection(); // when hitting bounds
                 
-//                ++i;           
+//                ++i
+                sleep(66); // 66?
             }
         }
         catch(Exception e){

@@ -37,15 +37,19 @@ public class Trace {
     }
     
     public void logHail(int bid, int pid, long time){
-        String s = "";
-        s += formatTime(time);
+        String s = formatTime(time);
         s += " branch " + bid + ": person " + pid + " hail";
         System.out.println(s);
     }
     
+    public void logRequest(int at,int to, int pid, long time){
+        String s =  formatTime(time);
+        s += " branch " + at + ": person " + pid + " request " + to;
+        System.out.println(s);
+    }
+    
     public void logTaxi(boolean arriving, int bid, long time){
-        String s = "";
-        s += formatTime(time);
+        String s = formatTime(time);
         s += " branch " + bid + ": taxi ";
         if(arriving) s += "arrive";
         else s += "depart";

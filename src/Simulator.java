@@ -69,7 +69,7 @@ public class Simulator {
         Trace TRACE = new Trace(System.currentTimeMillis());
         Person.TRACE = TRACE;
 
-        final Taxi t = new Taxi(branches, pal);
+        final Taxi t = new Taxi(branches, pal, TRACE);
         Person.TAXI = t;
         Taxi.stillWorking = pal.size(); // uncomment
 //        Taxi.stillWorking = 1;
