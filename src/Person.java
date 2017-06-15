@@ -70,16 +70,16 @@ public class Person extends Thread{
     @Override
     public void run(){
         try {
-//            block(); // initially block at HQ
-            while(!isDone()){
+            block(); // initially block at HQ
+            while(true){
                 block();
                 
-                
-//                if(isDone()) break;
-                synchronized (TAXI){
-                    TAXI.hail(currentBranchID, this); // 
-                }
                 work();
+                if(isDone()) break;
+//                synchronized (TAXI){
+                    TAXI.hail(currentBranchID, this); // 
+//                }
+                
                 block();
 //                System.out.println("not blocked");
 //                visits.clear();

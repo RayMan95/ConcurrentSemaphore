@@ -101,10 +101,10 @@ public class Taxi extends Thread{
     @Override
     public void run(){
         try {
-//            sleep(2000);
+            sleep(50);
 //            Semaphore s = passengerSemaphores.get(passengerSemaphores.keySet().iterator().next());
 //            s.release();
-            int i = 0;
+//            int i = 0;
             while(Taxi.stillWorking > 0){
 //            while(i < 30){$
 //                boolean stopping = false;
@@ -133,7 +133,7 @@ public class Taxi extends Thread{
     //                            p.disembark();
                                 System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
     //                            it.remove();
-                                p.work();
+//                                p.work();
                             }
                         }
                         currentBranch.getWorkers().addAll(disembarkList);
@@ -144,7 +144,7 @@ public class Taxi extends Thread{
                     
                     if(branchHaileeIDMap.containsKey(currentBranchID)){ // current branch has hailees
                         ArrayList<Person> embarkList = new ArrayList<>();
-                        ArrayList<Integer> embarkIDList = new ArrayList<>();
+//                        ArrayList<Integer> embarkIDList = new ArrayList<>();
                         
                         for (Iterator<Person> it = currentBranch.getWorkers().iterator(); it.hasNext(); ){ // embarking
                             Person p = it.next();
@@ -153,7 +153,7 @@ public class Taxi extends Thread{
                                 p.getSemaphore().release();
                                 System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
                                 embarkList.add(p);
-                                embarkIDList.add(p.getPID());
+//                                embarkIDList.add(p.getPID());
     //                            it.remove();
     //                            currentBranch.remove(p);
     //                            p.getSemaphore().acquire();
@@ -177,8 +177,7 @@ public class Taxi extends Thread{
                 if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))
                     changeDirection(); // when hitting bounds
                 
-                ++i;
-           
+//                ++i;           
             }
         }
         catch(Exception e){

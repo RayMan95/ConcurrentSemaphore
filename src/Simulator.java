@@ -67,12 +67,13 @@ public class Simulator {
 
         final Taxi t = new Taxi(branches, pal);
         Person.TAXI = t;
-//        Taxi.stillWorking = pal.size(); // uncomment
-        Taxi.stillWorking = 1;
+        Taxi.stillWorking = pal.size(); // uncomment
+//        Taxi.stillWorking = 1;
         t.start();
-//        for(Person p : pal) p.start();
-        pal.get(0).start();
-        
+        for(Person p : pal) p.start(); // uncomment
+//        pal.get(0).start();
+//        pal.get(1).start();
+//        pal.get(2).start();
         
         
         
