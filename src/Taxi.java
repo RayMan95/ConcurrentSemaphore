@@ -1,6 +1,7 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.concurrent.Semaphore;
@@ -24,7 +25,7 @@ public class Taxi extends Thread{
     
     public static volatile int stillWorking = 0;
     
-    private final ArrayList<Integer> haileeIDs = new ArrayList<>();
+    private final HashMap<Integer, HashSet<Integer>> branchHaileeIDMap = new HashMap<>(); // branch : PIDs
     private final ArrayList<Person> passengers = new ArrayList<>();
     
     
@@ -34,9 +35,18 @@ public class Taxi extends Thread{
         branches = b;
         passengerSemaphores = new HashMap<>();
         direction = 1;
+        
         for (Person p : ppl) passengerSemaphores.put(p, p.getSemaphore());
+        
+        setupBranchHailees(ppl);
     }
     
+    private void setupBranchHailees(ArrayList<Person> ppl){
+        HashSet<Integer> pids = new HashSet<>();
+        for (Person p : ppl) // for HQ
+            pids.add(p.getPID());
+        branchHaileeIDMap.put(0, pids);
+    }
     public void embark(Person p) throws InterruptedException{ 
 //        passengers.add(p);
         p.block();
@@ -48,8 +58,8 @@ public class Taxi extends Thread{
     
 //    public static void setSemaphore(Semaphore sem){ Taxi.sendingSemaphore = sem;}
     
-    public int headingOut(){
-        return direction;
+    public boolean headingOut(){
+        return direction == 1;
     }
     
     public void changeDirection(){
@@ -58,20 +68,40 @@ public class Taxi extends Thread{
     }
     
     synchronized public void hail(int bid, Person p) throws InterruptedException{
-        if(!inStops.contains(branches[bid])){
-            // Add to stops
-            inStops.add(branches[bid]);
-            outStops.add(branches[bid]);
-        }
-        haileeIDs.add(p.getPID());
+//        if(!inStops.contains(branches[bid])){
+//            // Add to stops
+//            inStops.add(branches[bid]);
+//            outStops.add(branches[bid]);
+//        }
+        addHailee(bid, p.getPID());
         System.out.println("Hailed by pid=" + p.getPID() +" at BID=" + bid);
 //        p.block();
+    }
+    
+    private void addHailee(int bid, int pid){
+        HashSet<Integer> haileeIDs = branchHaileeIDMap.get(bid);
+        if(haileeIDs != null){
+            haileeIDs.add(pid);
+            branchHaileeIDMap.replace(bid, haileeIDs);
+        }
+        else{
+            haileeIDs = new HashSet<>();
+            haileeIDs.add(pid);
+            branchHaileeIDMap.put(bid, haileeIDs);
+        }
+        
+    }
+    
+    private void removeHailee(int bid, int pid){
+        HashSet<Integer> haileeIDs = branchHaileeIDMap.get(bid);
+        haileeIDs.remove(pid);
+        branchHaileeIDMap.replace(bid, haileeIDs);
     }
     
     @Override
     public void run(){
         try {
-            sleep(2000);
+//            sleep(2000);
 //            Semaphore s = passengerSemaphores.get(passengerSemaphores.keySet().iterator().next());
 //            s.release();
             int i = 0;
@@ -89,47 +119,59 @@ public class Taxi extends Thread{
 //                }
 //                if(!stopping) continue;
 //                System.out.println("At branch: " + currentBranch);
-                ArrayList<Person> disembarkList = new ArrayList<>();
+                
                 synchronized (this){
-                    for(Iterator<Person> it = passengers.iterator(); it.hasNext(); ){ // disembarking
-                        Person p = it.next();
-                        if(p.stopHere(currentBranchID)){
-                            passengerSemaphores.get(p).release();
-//                            System.out.println("Releasing pid=" + p.getPID());
-                            disembarkList.add(p);
-//                            p.disembark();
-                            System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
-//                            it.remove();
+                    ArrayList<Person> disembarkList = new ArrayList<>();
+                    if(!passengers.isEmpty()){
+                        for(Iterator<Person> it = passengers.iterator(); it.hasNext(); ){ // disembarking
+                            Person p = it.next();
+                            if(p.stopHere(currentBranchID)){
+                                System.out.println("Releasing pid=" + p.getPID());
+                                p.getSemaphore().release();
+                                
+                                disembarkList.add(p);
+    //                            p.disembark();
+                                System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
+    //                            it.remove();
+                                p.work();
+                            }
                         }
+                        currentBranch.getWorkers().addAll(disembarkList);
+                        passengers.removeAll(disembarkList);
                     }
                 
                 
-                    ArrayList<Person> embarkList = new ArrayList<>();
-                    ArrayList<Integer> embarkIDList = new ArrayList<>();
-                
-                    for (Iterator<Person> it = currentBranch.getWorkers().iterator(); it.hasNext(); ){ // embarking
-                        Person p = it.next();
-                        if(haileeIDs.contains(p.getPID())){
-                            passengerSemaphores.get(p).release();
-                            System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
-                            embarkList.add(p);
-                            embarkIDList.add(p.getPID());
-//                            it.remove();
-//                            currentBranch.remove(p);
-//                            p.getSemaphore().acquire();
-//                            p.embark();
-                        }
-                    }
-                    currentBranch.getWorkers().addAll(disembarkList);
-                    passengers.removeAll(disembarkList);
-                    currentBranch.getWorkers().removeAll(embarkList);
-                    passengers.addAll(embarkList);
-//                        for (Person p : embarkList) haileeIDs.remove(p.getPID());
-                    haileeIDs.removeAll(embarkIDList);
                     
+                    if(branchHaileeIDMap.containsKey(currentBranchID)){ // current branch has hailees
+                        ArrayList<Person> embarkList = new ArrayList<>();
+                        ArrayList<Integer> embarkIDList = new ArrayList<>();
+                        
+                        for (Iterator<Person> it = currentBranch.getWorkers().iterator(); it.hasNext(); ){ // embarking
+                            Person p = it.next();
+                            if(branchHaileeIDMap.get(currentBranchID).contains(p.getPID())){ // if Person's ID in branchHaileeIDMap
+                                System.out.println("Releasing pid=" + p.getPID());
+                                p.getSemaphore().release();
+                                System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
+                                embarkList.add(p);
+                                embarkIDList.add(p.getPID());
+    //                            it.remove();
+    //                            currentBranch.remove(p);
+    //                            p.getSemaphore().acquire();
+    //                            p.embark();
+                            }
+                        }
+                        
+                        currentBranch.getWorkers().removeAll(embarkList);
+                        passengers.addAll(embarkList);
+                        branchHaileeIDMap.remove(currentBranchID); // remove branch from stops
+                    }
                 }
                     
 //                System.out.println(currentBranch);
+//                for(Iterator<Person> it = passengerSemaphores.keySet().iterator(); it.hasNext();){
+//                    Person p = it.next();
+//                    this.addHailee(0, p.getPID());
+//                }
                 
                 currentBranchID += direction;
                 if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))
@@ -139,16 +181,19 @@ public class Taxi extends Thread{
            
             }
         }
-        catch (InterruptedException iex) {
-            Logger.getLogger(Taxi.class.getName()).log(Level.SEVERE, null, iex);
+        catch(Exception e){
+            Logger.getLogger(Taxi.class.getName()).log(Level.SEVERE, null, e);
         }
+//        catch (InterruptedException iex) {
+//            Logger.getLogger(Taxi.class.getName()).log(Level.SEVERE, null, iex);
+//        }
     }
     
     @Override
     public String toString(){
-        String s = "Taxi at BID="+branches[currentBranchID].getBID();
+        String s = "Taxi at BID="+branches[currentBranchID].getBID()+ "\n";
         for(Person p :passengers){
-            s += "\npid=" + p.getPID();
+           s += "pid=" + p.getPID() + ",";
         }
         
         return s;

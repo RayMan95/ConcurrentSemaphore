@@ -56,9 +56,10 @@ public class Person extends Thread{
     }
     
     public void work() throws InterruptedException{
-        System.out.println("pid="+pid + " working...");
+        
         Visit v = visits.pop();
         currentBranchID = v.getBranchID();
+        System.out.println("pid="+pid + " working at BID=" + currentBranchID);
         sleep(33*v.getDuration());
 //        synchronized (TAXI){
 //            TAXI.hail(currentBranchID, pid);
@@ -69,18 +70,17 @@ public class Person extends Thread{
     @Override
     public void run(){
         try {
-            synchronized (TAXI){
-                TAXI.hail(currentBranchID, this); // 
-            }
-            block();
+//            block(); // initially block at HQ
             while(!isDone()){
-                
                 block();
-                work(); // blocks
-                if(isDone()) break;
+                
+                
+//                if(isDone()) break;
                 synchronized (TAXI){
                     TAXI.hail(currentBranchID, this); // 
                 }
+                work();
+                block();
 //                System.out.println("not blocked");
 //                visits.clear();
                 
