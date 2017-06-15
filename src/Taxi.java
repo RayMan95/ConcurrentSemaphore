@@ -74,7 +74,7 @@ public class Taxi extends Thread{
 //            outStops.add(branches[bid]);
 //        }
         addHailee(bid, p.getPID());
-        System.out.println("Hailed by pid=" + p.getPID() +" at BID=" + bid);
+//        System.out.println("Hailed by pid=" + p.getPID() +" at BID=" + bid);
 //        p.block();
     }
     
@@ -132,7 +132,7 @@ public class Taxi extends Thread{
                                 
                                 disembarkList.add(p);
     //                            p.disembark();
-                                System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
+//                                System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
     //                            it.remove();
 //                                p.work();
                             }
@@ -152,7 +152,7 @@ public class Taxi extends Thread{
                             if(branchHaileeIDMap.get(currentBranchID).contains(p.getPID())){ // if Person's ID in branchHaileeIDMap
 //                                System.out.println("Releasing pid=" + p.getPID());
                                 p.getSemaphore().release();
-                                System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
+//                                System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
                                 embarkList.add(p);
 //                                embarkIDList.add(p.getPID());
     //                            it.remove();

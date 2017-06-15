@@ -16,6 +16,7 @@ public class Person extends Thread{
     private final ArrayDeque<Visit> visits;
     private final int pid;
     private final Semaphore MYSEM;
+    public static Trace TRACE;
     
     private int currentBranchID;
     
@@ -51,7 +52,7 @@ public class Person extends Thread{
     }
     
     public void block() throws InterruptedException{
-        System.out.println("pid=" + pid + " blocking...");
+//        System.out.println("pid=" + pid + " blocking...");
         MYSEM.acquire();
     }
     
@@ -59,7 +60,7 @@ public class Person extends Thread{
         
         Visit v = visits.pop();
         currentBranchID = v.getBranchID();
-        System.out.println("pid="+pid + " working at BID=" + currentBranchID);
+//        System.out.println("pid="+pid + " working at BID=" + currentBranchID);
         sleep(33*v.getDuration());
 //        synchronized (TAXI){
 //            TAXI.hail(currentBranchID, pid);
@@ -77,7 +78,8 @@ public class Person extends Thread{
                 work();
                 if(isDone()) break;
                 synchronized (TAXI){
-                    TAXI.hail(currentBranchID, this); // 
+                    TAXI.hail(currentBranchID, this); //
+                    TRACE.logHail(currentBranchID, pid, System.currentTimeMillis());
                 }
                 
                 block();
@@ -86,11 +88,11 @@ public class Person extends Thread{
                 
 //                work(visits.peek().getDuration());
             }
-            System.out.println("pid=" + pid + " done working");
+//            System.out.println("pid=" + pid + " done working");
             
-//            synchronized (Person.class){
+            synchronized (Person.class){
                 Taxi.stillWorking = --Taxi.stillWorking;
-//            }
+            }
 //            System.out.println("Still working: " + Taxi.stillWorking);
         } 
         catch (InterruptedException iex) {

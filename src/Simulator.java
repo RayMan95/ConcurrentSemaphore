@@ -25,7 +25,7 @@ public class Simulator {
         if(args.length < 1) throw new IllegalArgumentException();
         File file = new File(args[0]);
 //        file = new File("busy.txt"); // TODO: remove
-//        file = new File("not_as_busy.txt"); // TODO: remove
+        file = new File("not_as_busy.txt"); // TODO: remove
 //        file = new File("idle.txt"); // TODO: remove
         
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -66,7 +66,8 @@ public class Simulator {
 //            System.out.println(p.toString());
 //        }
         
-        
+        Trace TRACE = new Trace(System.currentTimeMillis());
+        Person.TRACE = TRACE;
 
         final Taxi t = new Taxi(branches, pal);
         Person.TAXI = t;
