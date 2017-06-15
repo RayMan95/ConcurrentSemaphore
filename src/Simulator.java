@@ -24,6 +24,9 @@ public class Simulator {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         if(args.length < 1) throw new IllegalArgumentException();
         File file = new File(args[0]);
+//        file = new File("busy.txt"); // TODO: remove
+//        file = new File("not_as_busy.txt"); // TODO: remove
+//        file = new File("idle.txt"); // TODO: remove
         
         BufferedReader br = new BufferedReader(new FileReader(file));
 

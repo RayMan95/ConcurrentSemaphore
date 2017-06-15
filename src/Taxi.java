@@ -106,6 +106,7 @@ public class Taxi extends Thread{
 //            s.release();
 //            int i = 0;
             while(Taxi.stillWorking > 0){
+                
 //            while(i < 30){$
 //                boolean stopping = false;
 //                System.out.println(this);
@@ -126,7 +127,7 @@ public class Taxi extends Thread{
                         for(Iterator<Person> it = passengers.iterator(); it.hasNext(); ){ // disembarking
                             Person p = it.next();
                             if(p.stopHere(currentBranchID)){
-                                System.out.println("Releasing pid=" + p.getPID());
+//                                System.out.println("Releasing pid=" + p.getPID());
                                 p.getSemaphore().release();
                                 
                                 disembarkList.add(p);
@@ -149,7 +150,7 @@ public class Taxi extends Thread{
                         for (Iterator<Person> it = currentBranch.getWorkers().iterator(); it.hasNext(); ){ // embarking
                             Person p = it.next();
                             if(branchHaileeIDMap.get(currentBranchID).contains(p.getPID())){ // if Person's ID in branchHaileeIDMap
-                                System.out.println("Releasing pid=" + p.getPID());
+//                                System.out.println("Releasing pid=" + p.getPID());
                                 p.getSemaphore().release();
                                 System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
                                 embarkList.add(p);
@@ -172,6 +173,9 @@ public class Taxi extends Thread{
 //                    Person p = it.next();
 //                    this.addHailee(0, p.getPID());
 //                }
+                while(branchHaileeIDMap.isEmpty() && passengers.isEmpty() && Taxi.stillWorking > 0){
+                    sleep(1); // Taxi idle
+                }
                 
                 currentBranchID += direction;
                 if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))

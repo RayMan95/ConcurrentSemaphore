@@ -76,9 +76,9 @@ public class Person extends Thread{
                 
                 work();
                 if(isDone()) break;
-//                synchronized (TAXI){
+                synchronized (TAXI){
                     TAXI.hail(currentBranchID, this); // 
-//                }
+                }
                 
                 block();
 //                System.out.println("not blocked");
@@ -87,9 +87,11 @@ public class Person extends Thread{
 //                work(visits.peek().getDuration());
             }
             System.out.println("pid=" + pid + " done working");
-            synchronized (Person.class){
+            
+//            synchronized (Person.class){
                 Taxi.stillWorking = --Taxi.stillWorking;
-            }
+//            }
+//            System.out.println("Still working: " + Taxi.stillWorking);
         } 
         catch (InterruptedException iex) {
             Logger.getLogger(Person.class.getName()).log(Level.SEVERE, null, iex);
