@@ -43,12 +43,8 @@ public class Person extends Thread{
         return visits.peekFirst().getBranchID() == bid;
     }
     
-    
-    public void embark() throws InterruptedException{
-//        System.out.println("P: Embaking");
-//        TAXI.embark(this);
-        block(); // blocks until dropped off
-        
+    public int nextStopID(){
+        return visits.peek().getBranchID();
     }
     
     public void block() throws InterruptedException{
@@ -62,10 +58,6 @@ public class Person extends Thread{
         currentBranchID = v.getBranchID();
 //        System.out.println("pid="+pid + " working at BID=" + currentBranchID);
         sleep(33*v.getDuration());
-//        synchronized (TAXI){
-//            TAXI.hail(currentBranchID, pid);
-//        }
-//        block(); // blocks until picked up
     }
     
     @Override
@@ -73,6 +65,9 @@ public class Person extends Thread{
         try {
             block(); // initially block at HQ
             while(true){
+                synchronized (TAXI){
+                    TAXI.request(currentBranchID, this.nextStopID(), pid);
+                }
                 block();
                 
                 work();
@@ -83,10 +78,6 @@ public class Person extends Thread{
                 }
                 
                 block();
-//                System.out.println("not blocked");
-//                visits.clear();
-                
-//                work(visits.peek().getDuration());
             }
 //            System.out.println("pid=" + pid + " done working");
             
@@ -108,8 +99,7 @@ public class Person extends Thread{
         s +=" visits:";
         for (Visit v : visits){
             s += v;
-        }
-        
+        }        
         return s;
     }
 }

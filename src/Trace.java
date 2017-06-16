@@ -5,7 +5,6 @@
  * @version 2017-06-15
  */
 public class Trace {
-//    private String s;
     private final long startTime;
     
     
@@ -15,7 +14,6 @@ public class Trace {
     
     private String formatTime(long time){
         String temp = "";
-//        int t = (int)(System.currentTimeMillis() - startTime);
         long diff = time - startTime;
         int min = 0, hr = 9;
         while( diff > 33){
@@ -54,6 +52,12 @@ public class Trace {
         if(arriving) s += "arrive";
         else s += "depart";
         
+        System.out.println(s);
+    }
+    
+    public void logIdle(int bid, long time){
+        String s = formatTime(time);
+        s += " branch " + bid + ": taxi idle";
         System.out.println(s);
     }
 }

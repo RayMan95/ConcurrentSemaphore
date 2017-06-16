@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,11 +16,9 @@ import java.util.logging.Logger;
  */
 public class Taxi extends Thread{
     public int direction;
-    private final PriorityQueue<Branch>  inStops;
-    private final PriorityQueue<Branch> outStops;
+    private final PriorityQueue<Integer> stops;
     private final Branch[] branches;
     private int currentBranchID;
-    private HashMap<Person, Semaphore> passengerSemaphores;
     private final Trace TRACE;
     
     public static volatile int stillWorking = 0;
@@ -31,13 +28,10 @@ public class Taxi extends Thread{
     
     
     public Taxi(Branch[] b, ArrayList<Person> ppl, Trace t){
-        inStops = new PriorityQueue<>(Branch.inwardComparator());
-        outStops = new PriorityQueue<>(Branch.inwardComparator());
+        stops = new PriorityQueue<>();
+        stops.add(0); // stop at HQ first
         branches = b;
-        passengerSemaphores = new HashMap<>();
         direction = 1;
-        
-        for (Person p : ppl) passengerSemaphores.put(p, p.getSemaphore());
         
         setupBranchHailees(ppl);
         
@@ -50,16 +44,8 @@ public class Taxi extends Thread{
             pids.add(p.getPID());
         branchHaileeIDMap.put(0, pids);
     }
-    public void embark(Person p) throws InterruptedException{ 
-//        passengers.add(p);
-        p.block();
-        System.out.println("Embarking: pid=" + p.getPID());
-    }
-    
     
     public boolean disembark(Person p){ return passengers.remove(p);}
-    
-//    public static void setSemaphore(Semaphore sem){ Taxi.sendingSemaphore = sem;}
     
     public boolean headingOut(){
         return direction == 1;
@@ -71,14 +57,12 @@ public class Taxi extends Thread{
     }
     
     synchronized public void hail(int bid, Person p) throws InterruptedException{
-//        if(!inStops.contains(branches[bid])){
-//            // Add to stops
-//            inStops.add(branches[bid]);
-//            outStops.add(branches[bid]);
-//        }
+        if(!stops.contains(bid)){
+            // Add to stops
+            stops.add(bid);
+        }
         addHailee(bid, p.getPID());
 //        System.out.println("Hailed by pid=" + p.getPID() +" at BID=" + bid);
-//        p.block();
     }
     
     private void addHailee(int bid, int pid){
@@ -92,39 +76,33 @@ public class Taxi extends Thread{
             haileeIDs.add(pid);
             branchHaileeIDMap.put(bid, haileeIDs);
         }
-        
     }
     
-    private void removeHailee(int bid, int pid){
-        HashSet<Integer> haileeIDs = branchHaileeIDMap.get(bid);
-        haileeIDs.remove(pid);
-        branchHaileeIDMap.replace(bid, haileeIDs);
+    synchronized public void request(int at, int to, int pid){
+        TRACE.logRequest(at, to, pid, System.currentTimeMillis());
+        if(!stops.contains(to))
+            stops.add(to);
     }
     
     @Override
     public void run(){
         try {
-            sleep(50);
-//            Semaphore s = passengerSemaphores.get(passengerSemaphores.keySet().iterator().next());
-//            s.release();
-//            int i = 0;
+//            sleep(50);
+            
             while(Taxi.stillWorking > 0){
-                
-//            while(i < 30){$
-//                boolean stopping = false;
-//                System.out.println(this);
+                boolean stopping = false;
                 
                 Branch currentBranch = branches[currentBranchID];
-//                TRACE.logTaxi(true, currentBranchID, System.currentTimeMillis());
-//                if(direction > 0){ // heading outward
-//                    if(outStops.contains(currentBranch)) stopping = true;
-//                }
-//                else{ // heading inward
-//                    if(inStops.contains(currentBranch)) stopping = true;
-//                }
-//                if(!stopping) continue;
+                
+                if(stops.contains(currentBranchID)) stopping = true;
+                if(!stopping){
+                    nextBranch();
+                    continue;
+                }
+                // only log arrive when stopped there
+                TRACE.logTaxi(true, currentBranchID, System.currentTimeMillis());
 //                System.out.println("At branch: " + currentBranch);
-                sleep(33);
+                sleep(33); // wait 1 minute
                 synchronized (this){
                     ArrayList<Person> disembarkList = new ArrayList<>();
                     if(!passengers.isEmpty()){
@@ -132,13 +110,10 @@ public class Taxi extends Thread{
                             Person p = it.next();
                             if(p.stopHere(currentBranchID)){
 //                                System.out.println("Releasing pid=" + p.getPID());
+//                                System.out.println("Dropping off pid="+p.getPID());
                                 p.getSemaphore().release();
                                 
                                 disembarkList.add(p);
-    //                            p.disembark();
-//                                System.out.println("Dropping off pid=" + p.getPID() + " at BID=" + currentBranchID);
-    //                            it.remove();
-//                                p.work();
                             }
                         }
                         currentBranch.getWorkers().addAll(disembarkList);
@@ -149,7 +124,6 @@ public class Taxi extends Thread{
                     
                     if(branchHaileeIDMap.containsKey(currentBranchID)){ // current branch has hailees
                         ArrayList<Person> embarkList = new ArrayList<>();
-//                        ArrayList<Integer> embarkIDList = new ArrayList<>();
                         
                         for (Iterator<Person> it = currentBranch.getWorkers().iterator(); it.hasNext(); ){ // embarking
                             Person p = it.next();
@@ -158,45 +132,40 @@ public class Taxi extends Thread{
                                 p.getSemaphore().release();
 //                                System.out.println("Picking up pid="+p.getPID() + " at BID=" + currentBranchID);
                                 embarkList.add(p);
-//                                embarkIDList.add(p.getPID());
-    //                            it.remove();
-    //                            currentBranch.remove(p);
-    //                            p.getSemaphore().acquire();
-    //                            p.embark();
                             }
                         }
                         
                         currentBranch.getWorkers().removeAll(embarkList);
                         passengers.addAll(embarkList);
-                        branchHaileeIDMap.remove(currentBranchID); // remove branch from stops
+                        branchHaileeIDMap.remove(currentBranchID); // remove branch from hailees
                     }
+                    stops.remove(currentBranchID); // remove branch from stops
                 }
-                    
-//                System.out.println(currentBranch);
-//                for(Iterator<Person> it = passengerSemaphores.keySet().iterator(); it.hasNext();){
-//                    Person p = it.next();
-//                    this.addHailee(0, p.getPID());
-//                }
+                
+                boolean logged = false;
                 while(branchHaileeIDMap.isEmpty() && passengers.isEmpty() && Taxi.stillWorking > 0){
+                    if(!logged){ 
+                        TRACE.logIdle(currentBranchID, System.currentTimeMillis());
+                        logged = true;
+                    }
                     sleep(1); // Taxi idle
                 }
-                
-//                TRACE.logTaxi(false, currentBranchID, System.currentTimeMillis());
-                
-                currentBranchID += direction;
-                if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))
-                    changeDirection(); // when hitting bounds
-                
-//                ++i
-                sleep(66); // 66?
+                // only log depart when stopped there
+                TRACE.logTaxi(false, currentBranchID, System.currentTimeMillis()); 
+                nextBranch(); // sleeps
             }
         }
         catch(Exception e){
             Logger.getLogger(Taxi.class.getName()).log(Level.SEVERE, null, e);
         }
-//        catch (InterruptedException iex) {
-//            Logger.getLogger(Taxi.class.getName()).log(Level.SEVERE, null, iex);
-//        }
+    }
+    
+    private void nextBranch() throws InterruptedException{
+        
+        currentBranchID += direction;
+        if((currentBranchID == (branches.length-1)) || (currentBranchID == 0))
+            changeDirection(); // when hitting bounds
+         sleep(66); // 2 min travel time
     }
     
     @Override

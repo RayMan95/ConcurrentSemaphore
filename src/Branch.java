@@ -1,6 +1,5 @@
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 /**
  *
@@ -34,26 +33,6 @@ public class Branch{
     
     public int getBID(){
         return bid;
-    }
-    
-    public static Comparator<Branch> inwardComparator(){
-        return new Comparator<Branch>(){
-            @Override
-            public int compare(Branch b1, Branch b2){
-                if(b1.getBID() == b2.getBID()) return 0;
-                else return b1.getBID() < b2.getBID() ? 1:-1; 
-            };
-        };
-    }
-    
-    public static Comparator<Branch> outwardComparator(){
-        return new Comparator<Branch>(){
-            @Override
-            public int compare(Branch b1, Branch b2){
-                if(b1.getBID() == b2.getBID()) return 0;
-                else return b1.getBID() > b2.getBID() ? 1:-1; 
-            };
-        };
     }
     
     @Override

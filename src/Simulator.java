@@ -24,9 +24,6 @@ public class Simulator {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         if(args.length < 1) throw new IllegalArgumentException();
         File file = new File(args[0]);
-//        file = new File("busy.txt"); // TODO: remove
-        file = new File("not_as_busy.txt"); // TODO: remove
-//        file = new File("idle.txt"); // TODO: remove
         
         BufferedReader br = new BufferedReader(new FileReader(file));
 
@@ -35,9 +32,6 @@ public class Simulator {
         final int N = Integer.parseInt(br.readLine());
         
         ArrayList<Person> pal = new ArrayList<>();
-        
-        
-//        Person.receivingSemaphore = SEM;
         
         String line = "";
         for(int i = 0; i < M; ++i){
@@ -53,7 +47,7 @@ public class Simulator {
                 
                 adv.add(new Visit(b,d));
             }
-            Semaphore SEM = new Semaphore(0); // semaphores of bound 1 for blocking
+            Semaphore SEM = new Semaphore(0); // semaphores of bound 0 for blocking
             pal.add(new Person(adv,SEM));
         }
         
@@ -62,9 +56,6 @@ public class Simulator {
             branches[i] = new Branch();
         }
         branches[0].add(pal); // add all workers intially to HQ
-//        for(Person p : pal){
-//            System.out.println(p.toString());
-//        }
         
         Trace TRACE = new Trace(System.currentTimeMillis());
         Person.TRACE = TRACE;
@@ -72,22 +63,8 @@ public class Simulator {
         final Taxi t = new Taxi(branches, pal, TRACE);
         Person.TAXI = t;
         Taxi.stillWorking = pal.size(); // uncomment
-//        Taxi.stillWorking = 1;
         t.start();
         for(Person p : pal) p.start(); // uncomment
-//        pal.get(0).start();
-//        pal.get(1).start();
-//        pal.get(2).start();
-        
-        
-        
-        
-//        System.out.println(t);
-        
-//        catch(IOException ioe){
-//            
-//        }
-        
     }
     
 }
