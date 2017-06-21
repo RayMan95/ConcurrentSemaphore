@@ -1,10 +1,4 @@
-Author: Rayaan Fakier FKRRAY001
+Author: Rayaan Fakier
 Date: 2017-06-16
 
-To whom it may concern
-
-If the code does not compile/run for any reason, blame Netbeans! I can assure you that my code compiles and runs simulations.
-I'd be more than happy to sit in front of you and download my files from the automarker -> copy-paste all my code into text files -> compile them -> run them, if necessary.
-
-Kind regards,
-Student super scared of failing for a really dumb reason
+If there is, for some reason, someone actually going through this project, and they have questions about the project, send me an email and I will get back to you asap.
